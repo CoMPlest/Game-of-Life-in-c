@@ -4,7 +4,13 @@
 #include "econio.h"
 #include <Windows.h>
 
-
+/*
+ * Prints the game state on the console
+ * A bit slow
+ *
+ * TODO
+ * improve behaviour with console
+ */
 void renderState(GameState* game) {
     econio_clrscr();
 
@@ -27,14 +33,17 @@ void renderState(GameState* game) {
 
 
 int main() {
+    //Some initializations
     srand(time(NULL));
     econio_set_title("Game of life");
     econio_rawmode();
 
     GameState* gameState = createNewState(30, 30);
 
+    //randomizeCells(gameState);
     clearCells(gameState);
 
+    //Glider
     gameState->cells[70] = true;
     gameState->cells[100] = true;
     gameState->cells[130] = true;
@@ -54,8 +63,7 @@ int main() {
     }
 
     destroyGameState(gameState);
-
-    printf("\n\n");
+    //printf("\n\n"); //Helpful for debugging
 
     return 0;
 }
