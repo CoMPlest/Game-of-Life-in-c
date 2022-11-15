@@ -1,2 +1,4 @@
 cmake-build-debug
 debugmalloc.h
+.idea
+save.txt

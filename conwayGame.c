@@ -103,3 +103,29 @@ GameState* calculateNextState(GameState* game) {
     }
     return next_state;
 }
+
+void loadStateFromFile(FILE* fp, GameState* game) {
+    char current;
+    int i = 0;
+    while((current = fgetc(fp)) != EOF) {
+        if (i == game->width * game->height)
+            break;
+
+        if (current == '\n')
+            i = game->width * (i / game->width + 1);
+        else
+            game->cells[i++] = current == 'X';
+    }
+}
+
+void saveStateToFile(FILE* fp, GameState* game) {
+    for (int i = 0; i < game->width * game->height; i++) {
+        if (i != 0 && i%game->width == 0)
+            fputc('\n', fp);
+
+        if (game->cells[i])
+            fputc('X', fp);
+        else
+            fputc('-', fp);
+    }
+}

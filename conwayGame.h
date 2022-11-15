@@ -8,6 +8,7 @@
 #endif //NAGY_HAZI_CONWAYGAME_H
 
 #include <stdbool.h>
+#include <stdio.h>
 
 typedef struct Vector {
     int x;
@@ -33,3 +34,7 @@ void randomizeCells(GameState* game);
 int countAliveNeighbours(Vector* pos, GameState* game);
 
 GameState* calculateNextState(GameState* game);
+
+void loadStateFromFile(FILE* fp, GameState* game);
+
+void saveStateToFile(FILE* fp, GameState* game);

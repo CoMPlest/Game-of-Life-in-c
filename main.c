@@ -7,9 +7,6 @@
 /*
  * Prints the game state on the console
  * A bit slow
- *
- * TODO
- * improve behaviour with console
  */
 void renderState(GameState* game) {
     econio_gotoxy(0, 0);
@@ -54,44 +51,49 @@ void showCursor() {
     SetConsoleCursorInfo(hOut, &ConCurInf);
 }
 
-void loadStateFromFile(FILE* fp, GameState* game) {
-    char current;
-    int i = 0;
-    while((current = fgetc(fp)) != EOF) {
-        if (i == game->width * game->height)
-            break;
-
-        if (current == '\n')
-            i = game->width * (i / game->width + 1);
-        else
-            game->cells[i++] = current == 'X';
-    }
-}
-
-
 
 int main() {
+    //Settings
+    bool loadFromFile = true;
+    char *fileName = "C:\\Users\\szeke\\Documents\\Nagy_HZ\\game.txt";
+    char *title = "Game of life";
+    int escapeKey = KEY_ESCAPE;
+    int width = 120;
+    int height = 30;
+    bool saveToFile = false;
+    char *savefileName = "C:\\Users\\szeke\\Documents\\Nagy_HZ\\save.txt";
+
     //Some initializations
     srand(time(NULL));
-    econio_set_title("Game of life");
+    econio_set_title(title);
     econio_rawmode();
     econio_clrscr();
     hideCursor();
+    FILE* fp;
 
-    GameState* gameState = createNewState(120, 30);
+    GameState* gameState = createNewState(width, height);
     clearCells(gameState);
-    
-    FILE* fp = fopen("C:\\Users\\szeke\\Documents\\Nagy_HZ\\game.txt", "r");
-        loadStateFromFile(fp, gameState);
-    fclose(fp);
+
+    if (loadFromFile && fileName != NULL) {
+        fp = fopen(fileName, "r");
+            loadStateFromFile(fp, gameState);
+        fclose(fp);
+    } else
+        randomizeCells(gameState);
 
     //game loop
-    while (!(econio_kbhit() && econio_getch() == KEY_ESCAPE)) {
+    while (!(econio_kbhit() && econio_getch() == escapeKey)) {
         renderState(gameState);
 
         GameState* prev_state = gameState;
         gameState = calculateNextState(gameState);
         destroyGameState(prev_state);
+    }
+
+    if (saveToFile && savefileName != NULL) {
+        fp = fopen(savefileName, "w");
+            saveStateToFile(fp, gameState);
+        fclose(fp);
     }
 
     destroyGameState(gameState);
