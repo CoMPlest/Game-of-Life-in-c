@@ -54,6 +54,19 @@ void showCursor() {
     SetConsoleCursorInfo(hOut, &ConCurInf);
 }
 
+void loadStateFromFile(FILE* fp, GameState* game) {
+    char current;
+    int i = 0;
+    while((current = fgetc(fp)) != EOF) {
+        if (i == game->width * game->height)
+            break;
+
+        if (current == '\n')
+            i = game->width * (i / game->width + 1);
+        else
+            game->cells[i++] = current == 'X';
+    }
+}
 
 
 
@@ -67,7 +80,10 @@ int main() {
 
     GameState* gameState = createNewState(120, 30);
     clearCells(gameState);
-
+    
+    FILE* fp = fopen("C:\\Users\\szeke\\Documents\\Nagy_HZ\\game.txt", "r");
+        loadStateFromFile(fp, gameState);
+    fclose(fp);
 
     //game loop
     while (!(econio_kbhit() && econio_getch() == KEY_ESCAPE)) {
