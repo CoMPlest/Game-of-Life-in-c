@@ -12,7 +12,7 @@
  * improve behaviour with console
  */
 void renderState(GameState* game) {
-    econio_clrscr();
+    econio_gotoxy(0, 0);
 
     for(int i = 0; i < game->width * game->height; i++) {
 
@@ -30,6 +30,31 @@ void renderState(GameState* game) {
     }
 }
 
+void hideCursor() {
+    HANDLE hOut;
+    CONSOLE_CURSOR_INFO ConCurInf;
+
+    hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    ConCurInf.dwSize = 10;
+    ConCurInf.bVisible = FALSE;
+
+    SetConsoleCursorInfo(hOut, &ConCurInf);
+}
+
+void showCursor() {
+    HANDLE hOut;
+    CONSOLE_CURSOR_INFO ConCurInf;
+
+    hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    ConCurInf.dwSize = 10;
+    ConCurInf.bVisible = TRUE;
+
+    SetConsoleCursorInfo(hOut, &ConCurInf);
+}
+
+
 
 
 int main() {
@@ -37,32 +62,24 @@ int main() {
     srand(time(NULL));
     econio_set_title("Game of life");
     econio_rawmode();
+    econio_clrscr();
+    hideCursor();
 
-    GameState* gameState = createNewState(30, 30);
-
-    //randomizeCells(gameState);
+    GameState* gameState = createNewState(120, 30);
     clearCells(gameState);
 
-    //Glider
-    gameState->cells[70] = true;
-    gameState->cells[100] = true;
-    gameState->cells[130] = true;
-    gameState->cells[129] = true;
-    gameState->cells[98] = true;
-
-    renderState(gameState);
 
     //game loop
     while (!(econio_kbhit() && econio_getch() == KEY_ESCAPE)) {
+        renderState(gameState);
+
         GameState* prev_state = gameState;
         gameState = calculateNextState(gameState);
         destroyGameState(prev_state);
-
-        renderState(gameState);
-        Sleep(50);
     }
 
     destroyGameState(gameState);
+    showCursor();
     //printf("\n\n"); //Helpful for debugging
 
     return 0;

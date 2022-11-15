@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/Nagy_HZ.iml" filepath="$PROJECT_DIR$/.idea/Nagy_HZ.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Nagy_hazi.iml" filepath="$PROJECT_DIR$/.idea/Nagy_hazi.iml" />
     </modules>
   </component>
