@@ -51,53 +51,54 @@ void showCursor() {
     SetConsoleCursorInfo(hOut, &ConCurInf);
 }
 
-
-int main() {
+int main(int argc, char *argv[]) {
     //Settings
-    bool loadFromFile = true;
-    char *fileName = "C:\\Users\\szeke\\Documents\\Nagy_HZ\\game.txt";
     char *title = "Game of life";
     int escapeKey = KEY_ESCAPE;
-    int width = 120;
-    int height = 30;
-    bool saveToFile = false;
-    char *savefileName = "C:\\Users\\szeke\\Documents\\Nagy_HZ\\save.txt";
+    int width;
+    int height;
+    char *loadFileName;
+    char *savefileName;
+    int iterationCount = 0;
 
     //Some initializations
     srand(time(NULL));
     econio_set_title(title);
-    econio_rawmode();
-    econio_clrscr();
-    hideCursor();
-    FILE* fp;
+
+    bool dispGraphics = true;
 
     GameState* gameState = createNewState(width, height);
     clearCells(gameState);
 
-    if (loadFromFile && fileName != NULL) {
-        fp = fopen(fileName, "r");
+    FILE* fp;
+    if (loadFileName != NULL) {
+        fp = fopen(loadFileName, "r");
             loadStateFromFile(fp, gameState);
         fclose(fp);
     } else
         randomizeCells(gameState);
 
     //game loop
-    while (!(econio_kbhit() && econio_getch() == escapeKey)) {
-        renderState(gameState);
+    if (dispGraphics) {
+        econio_rawmode();
+        econio_clrscr();
+        hideCursor();
 
-        GameState* prev_state = gameState;
-        gameState = calculateNextState(gameState);
-        destroyGameState(prev_state);
+        while (!(econio_kbhit() && econio_getch() == escapeKey)) {
+            renderState(gameState);
+            stepGame(&gameState);
+        }
     }
 
-    if (saveToFile && savefileName != NULL) {
+    if (savefileName != NULL) {
         fp = fopen(savefileName, "w");
             saveStateToFile(fp, gameState);
         fclose(fp);
     }
 
     destroyGameState(gameState);
-    showCursor();
+    if (!dispGraphics)
+        showCursor();
     //printf("\n\n"); //Helpful for debugging
 
     return 0;

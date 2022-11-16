@@ -104,6 +104,12 @@ GameState* calculateNextState(GameState* game) {
     return next_state;
 }
 
+void stepGame(GameState** game) {
+    GameState* prev_state = *game;
+    *game = calculateNextState(*game);
+    destroyGameState(prev_state);
+}
+
 void loadStateFromFile(FILE* fp, GameState* game) {
     char current;
     int i = 0;

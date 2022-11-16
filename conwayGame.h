@@ -38,3 +38,5 @@ GameState* calculateNextState(GameState* game);
 void loadStateFromFile(FILE* fp, GameState* game);
 
 void saveStateToFile(FILE* fp, GameState* game);
+
+void stepGame(GameState** game);
