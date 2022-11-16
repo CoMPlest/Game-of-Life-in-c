@@ -65,13 +65,44 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
     econio_set_title(title);
 
-    bool dispGraphics = true;
+    if (argc < 3) {
+        printf("Please specify the width of the game: ");
+        scanf("%d", &width);
+
+        printf("Please specify the height of the game: ");
+        scanf("%d", &height);
+
+        printf("How many iteration (0 if infinite with graphics)?: ");
+        scanf("%d", &iterationCount);
+
+        printf("Input file (r if random state): ");
+        scanf("%s", &loadFileName);
+
+        printf("Output file (n if no save): ");
+        scanf("%s", &savefileName);
+    } else {
+        sscanf(argv[2], "%d", &width);
+        sscanf(argv[3], "%d", &height);
+
+        if (argc >= 4)
+            sscanf(argv[4], "%d", &iterationCount);
+
+        // Load filename args into fileName vars
+        if (argc >= 5)
+            loadFileName = &(argv[5]);
+
+        if (argc >= 6)
+            savefileName = &(argv[6]);
+    }
+
+    bool dispGraphics = iterationCount == 0;
+
 
     GameState* gameState = createNewState(width, height);
     clearCells(gameState);
 
     FILE* fp;
-    if (loadFileName != NULL) {
+    if (strcmp(loadFileName, "r")) {
         fp = fopen(loadFileName, "r");
             loadStateFromFile(fp, gameState);
         fclose(fp);
@@ -88,9 +119,12 @@ int main(int argc, char *argv[]) {
             renderState(gameState);
             stepGame(&gameState);
         }
+    } else {
+        for (int i = 0; i < iterationCount; i++)
+            stepGame(&gameState);
     }
 
-    if (savefileName != NULL) {
+    if (savefileName != "n") {
         fp = fopen(savefileName, "w");
             saveStateToFile(fp, gameState);
         fclose(fp);
