@@ -110,7 +110,22 @@ void stepGame(GameState** game) {
     destroyGameState(prev_state);
 }
 
-void loadStateFromFile(FILE* fp, GameState* game) {
+void convertToChar(GameState* game, char* buff) {
+    for(int i = 0; i < game->width * game->height; i++) {
+        //convert to the appropriate character
+        if (game->cells[i]) {
+            buff[i] = 'X';
+        } else {
+            buff[i] = ' ';
+        }
+    }
+}
+
+bool loadStateFromFile(char* fileName, GameState* game) {
+    if (fileName == NULL)
+        return false;
+    FILE* fp;
+    fp = fopen(fileName, "r");
     char current;
     int i = 0;
     while((current = fgetc(fp)) != EOF) {
@@ -122,9 +137,15 @@ void loadStateFromFile(FILE* fp, GameState* game) {
         else
             game->cells[i++] = current == 'X';
     }
+    fclose(fp);
+    return true;
 }
 
-void saveStateToFile(FILE* fp, GameState* game) {
+bool saveStateToFile(char* fileName, GameState* game) {
+    if (fileName == NULL)
+        return false;
+    FILE* fp;
+    fp = fopen(fileName, "w");
     for (int i = 0; i < game->width * game->height; i++) {
         if (i != 0 && i%game->width == 0)
             fputc('\n', fp);
@@ -134,4 +155,6 @@ void saveStateToFile(FILE* fp, GameState* game) {
         else
             fputc('-', fp);
     }
+    fclose(fp);
+    return true;
 }
