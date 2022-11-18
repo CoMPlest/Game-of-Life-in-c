@@ -8,6 +8,8 @@
  * Prints the game state on the console
  * A bit slow
  */
+
+
 void renderState(GameState* game) {
     econio_gotoxy(0, 0);
 
@@ -15,28 +17,20 @@ void renderState(GameState* game) {
 
         //Print new line if at the end
         if (i % game->width == 0) {
-            printf("\n");
+            putchar('\n');
         }
 
         //Print the appropriate character
         if (game->cells[i]) {
-            printf("X");
+            putchar('X');
         } else {
-            printf(" ");
+            putchar(' ');
         }
     }
 }
 
-void renderStateWithBuff(GameState* game, char* buff) {
-    econio_gotoxy(0, 0);
-
+void renderStateWithBuff(GameState* game, char *buff, HANDLE hConsole, DWORD *dwBytesWritten ) {
     for(int i = 0; i < game->width * game->height; i++) {
-
-        //Print new line if at the end
-        if (i % game->width == 0) {
-            buff[i] = '\n';
-        }
-
         //Print the appropriate character
         if (game->cells[i]) {
             buff[i] = 'X';
@@ -45,7 +39,7 @@ void renderStateWithBuff(GameState* game, char* buff) {
         }
     }
 
-    printf("%s", buff);
+    WriteConsoleOutputCharacterA(hConsole, (LPCSTR) buff, game->width*game->height, (COORD) {0, 0 }, dwBytesWritten);
 }
 
 void hideCursor() {
@@ -106,13 +100,17 @@ int main(int argc, char *argv[]) {
         econio_clrscr();
         hideCursor();
 
-        char* buffer = malloc(sizeof(char)*(gameState->width+1)*gameState->height);
+        char *screen = malloc(sizeof(char )*(gameState->width*gameState->height));
+        HANDLE hConsole = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+        SetConsoleActiveScreenBuffer(hConsole);
+        DWORD dwBytesWritten = 0;
 
         while (!(econio_kbhit() && econio_getch() == escapeKey)) {
-            renderStateWithBuff(gameState, buffer);
+            renderStateWithBuff(gameState, screen, hConsole, &dwBytesWritten);
             stepGame(&gameState);
+            Sleep(100);
         }
-        free(buffer);
+        free(screen);
     }
 
     if (savefileName != NULL) {
