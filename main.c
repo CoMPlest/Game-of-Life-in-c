@@ -27,6 +27,27 @@ void renderState(GameState* game) {
     }
 }
 
+void renderStateWithBuff(GameState* game, char* buff) {
+    econio_gotoxy(0, 0);
+
+    for(int i = 0; i < game->width * game->height; i++) {
+
+        //Print new line if at the end
+        if (i % game->width == 0) {
+            buff[i] = '\n';
+        }
+
+        //Print the appropriate character
+        if (game->cells[i]) {
+            buff[i] = 'X';
+        } else {
+            buff[i] = ' ';
+        }
+    }
+
+    printf("%s", buff);
+}
+
 void hideCursor() {
     HANDLE hOut;
     CONSOLE_CURSOR_INFO ConCurInf;
@@ -55,8 +76,8 @@ int main(int argc, char *argv[]) {
     //Settings
     char *title = "Game of life";
     int escapeKey = KEY_ESCAPE;
-    int width;
-    int height;
+    int width = 120;
+    int height = 30;
     char *loadFileName;
     char *savefileName;
     int iterationCount = 0;
@@ -69,6 +90,7 @@ int main(int argc, char *argv[]) {
 
     GameState* gameState = createNewState(width, height);
     clearCells(gameState);
+    randomizeCells(gameState);
 
     FILE* fp;
     if (loadFileName != NULL) {
@@ -84,10 +106,13 @@ int main(int argc, char *argv[]) {
         econio_clrscr();
         hideCursor();
 
+        char* buffer = malloc(sizeof(char)*(gameState->width+1)*gameState->height);
+
         while (!(econio_kbhit() && econio_getch() == escapeKey)) {
-            renderState(gameState);
+            renderStateWithBuff(gameState, buffer);
             stepGame(&gameState);
         }
+        free(buffer);
     }
 
     if (savefileName != NULL) {
