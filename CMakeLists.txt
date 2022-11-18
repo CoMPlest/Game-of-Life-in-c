@@ -3,4 +3,4 @@ project(Nagy_hazi C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(Nagy_hazi main.c econio.c conwayGame.c conwayGame.h)
+add_executable(Nagy_hazi main.c econio.c conwayGame.c conwayGame.h gameEngine.c gameEngine.h)

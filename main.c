@@ -1,69 +1,20 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include "conwayGame.h"
-#include "econio.h"
-#include <Windows.h>
-
-/*
- * Prints the game state on the console
- * A bit slow
- */
-void renderState(GameState* game) {
-    econio_gotoxy(0, 0);
-
-    for(int i = 0; i < game->width * game->height; i++) {
-
-        //Print new line if at the end
-        if (i % game->width == 0) {
-            printf("\n");
-        }
-
-        //Print the appropriate character
-        if (game->cells[i]) {
-            printf("X");
-        } else {
-            printf(" ");
-        }
-    }
-}
-
-void hideCursor() {
-    HANDLE hOut;
-    CONSOLE_CURSOR_INFO ConCurInf;
-
-    hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    ConCurInf.dwSize = 10;
-    ConCurInf.bVisible = FALSE;
-
-    SetConsoleCursorInfo(hOut, &ConCurInf);
-}
-
-void showCursor() {
-    HANDLE hOut;
-    CONSOLE_CURSOR_INFO ConCurInf;
-
-    hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    ConCurInf.dwSize = 10;
-    ConCurInf.bVisible = TRUE;
-
-    SetConsoleCursorInfo(hOut, &ConCurInf);
-}
 
 int main(int argc, char *argv[]) {
     //Settings
     char *title = "Game of life";
     int escapeKey = KEY_ESCAPE;
-    int width;
-    int height;
-    char *loadFileName;
-    char *savefileName;
+    int width = 120;
+    int height = 30;
+    char *loadFileName = NULL;
+    char *savefileName = NULL;
     int iterationCount = 0;
 
     //Some initializations
     srand(time(NULL));
-    econio_set_title(title);
 
     if (argc < 3) {
         printf("Please specify the width of the game: ");
@@ -101,38 +52,29 @@ int main(int argc, char *argv[]) {
     GameState* gameState = createNewState(width, height);
     clearCells(gameState);
 
-    FILE* fp;
-    if (strcmp(loadFileName, "r")) {
-        fp = fopen(loadFileName, "r");
-            loadStateFromFile(fp, gameState);
-        fclose(fp);
-    } else
+    if (!loadStateFromFile(loadFileName, gameState))
         randomizeCells(gameState);
 
-    //game loop
     if (dispGraphics) {
-        econio_rawmode();
-        econio_clrscr();
-        hideCursor();
+        Screen* screen = createScreen(gameState->width*gameState->height, title);
+        activateScreen(screen);
 
+        //game loop
         while (!(econio_kbhit() && econio_getch() == escapeKey)) {
-            renderState(gameState);
+            convertToChar(gameState, screen->chars);
+            render2d(screen);
             stepGame(&gameState);
+            Sleep(100);
         }
-    } else {
-        for (int i = 0; i < iterationCount; i++)
-            stepGame(&gameState);
+
+        deactivateScreen(screen);
+        destroyScreen(screen);
     }
 
-    if (savefileName != "n") {
-        fp = fopen(savefileName, "w");
-            saveStateToFile(fp, gameState);
-        fclose(fp);
-    }
+
+    saveStateToFile(savefileName, gameState);
 
     destroyGameState(gameState);
-    if (!dispGraphics)
-        showCursor();
     //printf("\n\n"); //Helpful for debugging
 
     return 0;
