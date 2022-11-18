@@ -7,8 +7,7 @@
 
 #endif //NAGY_HAZI_CONWAYGAME_H
 
-#include <stdbool.h>
-#include <stdio.h>
+#include "gameEngine.h"
 
 typedef struct Vector {
     int x;
@@ -35,8 +34,10 @@ int countAliveNeighbours(Vector* pos, GameState* game);
 
 GameState* calculateNextState(GameState* game);
 
-void loadStateFromFile(FILE* fp, GameState* game);
-
-void saveStateToFile(FILE* fp, GameState* game);
-
 void stepGame(GameState** game);
+
+void convertToChar(GameState* game, char* buff);
+
+bool loadStateFromFile(char* fileName, GameState* game);
+
+bool saveStateToFile(char* fileName, GameState* game);
