@@ -7,11 +7,15 @@ int main(int argc, char *argv[]) {
     //Settings
     char *title = "Game of life";
     int escapeKey = KEY_ESCAPE;
-    int width = 120;
-    int height = 30;
+    int fps = 10;
+
+    //Parameters
+    int width;
+    int height;
     char *loadFileName = NULL;
     char *savefileName = NULL;
-    int iterationCount = 0;
+    int iterationCount;
+    bool dispGraphics;
 
     //Some initializations
     srand(time(NULL));
@@ -46,8 +50,7 @@ int main(int argc, char *argv[]) {
             savefileName = &(argv[6]);
     }
 
-    bool dispGraphics = iterationCount == 0;
-
+    dispGraphics = iterationCount == 0;
 
     GameState* gameState = createNewState(width, height);
     clearCells(gameState);
@@ -60,15 +63,20 @@ int main(int argc, char *argv[]) {
         activateScreen(screen);
 
         //game loop
+        //until a key is pressed and that key matches the escape key
         while (!(econio_kbhit() && econio_getch() == escapeKey)) {
             convertToChar(gameState, screen->chars);
             render2d(screen);
-            stepGame(&gameState);
-            Sleep(100);
+            stepGame(&gameState); //Room for improvement and optimization
+            Sleep(1000/fps);
         }
 
         deactivateScreen(screen);
         destroyScreen(screen);
+    } else {
+        for(int i = 0; i < iterationCount; i++) {
+            stepGame(&gameState);
+        }
     }
 
 
