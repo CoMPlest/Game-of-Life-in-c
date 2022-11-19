@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     GameState* gameState = createNewState(params->width, params->height);
     clearCells(gameState); //not essential, could remove it
 
-    if (params->loadFileName != NULL && strcmp(params->loadFileName, &(settings->randomStartChar)) != 0)
+    if (params->loadFileName != NULL && *(params->loadFileName) != settings->randomStartChar)
         loadStateFromFile(params->loadFileName, gameState);
     else
         randomizeCells(gameState);
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
             stepGame(&gameState);
     }
 
-    if (params->saveFileName != NULL && strcmp(params->saveFileName, &(settings->noSaveChar)) != 0)
+    if (params->saveFileName != NULL && *(params->saveFileName) != settings->noSaveChar)
         saveStateToFile(params->saveFileName, gameState);
 
     if (didQuestionUser) {
