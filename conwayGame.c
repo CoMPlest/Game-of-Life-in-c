@@ -1,16 +1,10 @@
 #include "conwayGame.h"
 #include <stdlib.h>
 
-/*
- * Returns the index of a cell based on a 2d vector
- */
 int getCellIndex(Vector coords, int width) {
     return coords.x + coords.y*width;
 }
 
-/*
- * Handles the dynamic memory allocation for the GameState
- */
 GameState* createNewState(int width, int height) {
     GameState* game = malloc(sizeof(GameState));
 
@@ -121,9 +115,9 @@ void convertToChar(GameState* game, char* buff) {
     }
 }
 
-bool loadStateFromFile(char* fileName, GameState* game) {
+void loadStateFromFile(char* fileName, GameState* game) {
     if (fileName == NULL)
-        return false;
+        return;
     FILE* fp;
     fp = fopen(fileName, "r");
     char current;
@@ -138,12 +132,11 @@ bool loadStateFromFile(char* fileName, GameState* game) {
             game->cells[i++] = current == 'X';
     }
     fclose(fp);
-    return true;
 }
 
-bool saveStateToFile(char* fileName, GameState* game) {
+void saveStateToFile(char* fileName, GameState* game) {
     if (fileName == NULL)
-        return false;
+        return;
     FILE* fp;
     fp = fopen(fileName, "w");
     for (int i = 0; i < game->width * game->height; i++) {
@@ -156,5 +149,4 @@ bool saveStateToFile(char* fileName, GameState* game) {
             fputc('-', fp);
     }
     fclose(fp);
-    return true;
 }

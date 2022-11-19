@@ -4,10 +4,6 @@
 
 #include "gameEngine.h"
 
-/*
- * Prints a char* on the console
- * A bit slow
- */
 void print2d(char* buff, int length, bool withLineBreak, int lineWidth) {
     econio_gotoxy(0, 0);
 
