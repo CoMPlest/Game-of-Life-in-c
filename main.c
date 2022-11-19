@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include "conwayGame.h"
-#include "debugmalloc.h"
 
 int main(int argc, char *argv[]) {
     //Settings
