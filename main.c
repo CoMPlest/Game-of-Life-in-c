@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     int height;
     char *loadFileName = NULL;
     char *savefileName = NULL;
-    int iterationCount;
+    int iterationCount = 0;
     bool dispGraphics;
 
     //Some initializations
@@ -27,27 +27,32 @@ int main(int argc, char *argv[]) {
         printf("Please specify the height of the game: ");
         scanf("%d", &height);
 
+        printf("Input file max 50 chars (r if random state): ");
+        loadFileName = malloc(sizeof(char)*51);
+        loadFileName[50] = '\0';
+        scanf("%s", loadFileName);
+
+        printf("Output file max 50 chars (n if no save): ");
+        savefileName = malloc(sizeof(char)*51);
+        savefileName[50] = '\0';
+        scanf("%s", savefileName);
+
+
         printf("How many iteration (0 if infinite with graphics)?: ");
         scanf("%d", &iterationCount);
-
-        printf("Input file (r if random state): ");
-        scanf("%s", &loadFileName);
-
-        printf("Output file (n if no save): ");
-        scanf("%s", &savefileName);
     } else {
-        sscanf(argv[2], "%d", &width);
-        sscanf(argv[3], "%d", &height);
-
-        if (argc >= 4)
-            sscanf(argv[4], "%d", &iterationCount);
+        sscanf(argv[1], "%d", &width);
+        sscanf(argv[2], "%d", &height);
 
         // Load filename args into fileName vars
-        if (argc >= 5)
-            loadFileName = &(argv[5]);
+        if (argc > 3)
+            loadFileName = argv[3];
 
-        if (argc >= 6)
-            savefileName = &(argv[6]);
+        if (argc > 4)
+            savefileName = argv[4];
+
+        if (argc > 5)
+            sscanf(argv[5], "%d", &iterationCount);
     }
 
     dispGraphics = iterationCount == 0;
@@ -55,8 +60,8 @@ int main(int argc, char *argv[]) {
     GameState* gameState = createNewState(width, height);
     clearCells(gameState);
 
-    if (!loadStateFromFile(loadFileName, gameState))
-        randomizeCells(gameState);
+    if (( loadFileName != NULL && !strcmp(loadFileName, "r") ) || !loadStateFromFile(loadFileName, gameState))
+            randomizeCells(gameState);
 
     if (dispGraphics) {
         Screen* screen = createScreen(gameState->width*gameState->height, title);
@@ -79,9 +84,13 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    if (savefileName != NULL && strcmp(savefileName, "n"))
+        saveStateToFile(savefileName, gameState);
 
-    saveStateToFile(savefileName, gameState);
-
+    if (argc < 3) {
+        free(loadFileName);
+        free(savefileName);
+    }
     destroyGameState(gameState);
     //printf("\n\n"); //Helpful for debugging
 
