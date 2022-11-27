@@ -118,8 +118,14 @@ void convertToChar(GameState* game, char* buff) {
 void loadStateFromFile(char* fileName, GameState* game) {
     if (fileName == NULL)
         return;
+
     FILE* fp;
     fp = fopen(fileName, "r");
+    if (fp == NULL) {
+        perror("Couldn't open file to load the game state.");
+        return;
+    }
+
     char current;
     int i = 0;
     while((current = fgetc(fp)) != EOF) {
@@ -137,8 +143,14 @@ void loadStateFromFile(char* fileName, GameState* game) {
 void saveStateToFile(char* fileName, GameState* game) {
     if (fileName == NULL)
         return;
+
     FILE* fp;
     fp = fopen(fileName, "w");
+    if (fp == NULL) {
+        perror("Couldn't open file to save the game state.");
+        return;
+    }
+
     for (int i = 0; i < game->width * game->height; i++) {
         if (i != 0 && i%game->width == 0)
             fputc('\n', fp);
