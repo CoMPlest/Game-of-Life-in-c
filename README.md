@@ -1,8 +1,38 @@
+## Játékszabályok és a szimuláció menete
+A játékban egy populációt szimulálunk.
+A szabályok egyszerűek: 
+- Adott egy valamilyen méretű négyzethálóra felosztott sík amelyekben a négyzetek sejteket jelölnek.
+- A sejteknek 2 egyszerű állapotuk lehet: vagy halottak vagy éppen élnek. A kezdő állapotuk adott.
+- Minden sejt a következő lépésben amelynek 3x3-as környezetében, ha:
+	- több mint 3 élő sejt van, túlnépesedés miatt meghal.
+	- 3 élő sejt van, feléled vagyis ha élő volt  élő marad, ha halott volt akkor élő lesz.
+	- 2 élő sejt van, akkor változatlan marad az állapota.
+	- 2-nél kevesebb élő sejt van, meghal.
+
+# Felhasználói dokumentáció
+
+### Lépések:
+- Nyissunk meg egy konzolt. Lehet bármilyen pl.: `cmd`
+- Navigáljunk a programunkhoz
+- A bal felső sarokra jobb klikkelve keressük meg az ablak méreteinek beállítását és állítsuk be olyan szélességűre amilyen széles játékot akarunk futtatni
+- Hívjuk meg a programunkat
+
+Argumentumok:
+```
+gameoflife.exe <szelesseg> <hosszusag> <kezdoallapot_fajl> <kimeneti_fajl> <iteracioszam> 
+```
+A szelesség és a hosszúság argumentum szükséges a program futtatásához. Amennyiben ezeket nem adjuk meg a program kérdések formájában elkéri ezeket a felhasználótól
+
+A kezdoallapot_fajl beállításával megadhatunk egy kezdőállapotot. Amennyiben ez nem tesszük meg a program egy véletlenszerűen generált kezdőpozíciót fog választani.
+
+A kimeneti fájl megadásával megadhatjuk annak a fájlnak az elérési útját ahova a program futásának befejezésével lementi az utolsó állapotot
+
+Az iterácioszam megadása esetén a program grafikus megjelenítés nélkül fog futni és a végén lementi a kimeneti fájlba az állapotot
+
 # Programozói dokumentáció
 
-![[Nagy HZ spec#Játékszabályok és a szimuláció menete]]
-
-## Adatszerkezetek
+## A játék logikája
+### Adatszerkezetek
 A program fő célja hogy egy sík 2 dimenziós tér keretein belül sejteket szimuláljon. Mivel az elvárások szerint a játéktér fix méretű, tehát a szimuláció alatt nem változik, a céljaink elérésére, és a sejtek adatainak tárolására teljesen tökéletesen megfelel egy átlagos két dimenziós statikus tömb amelyet dinamikusan tárolunk hogy tetszőleges méretű lehessen. A választható méretek miatt szükségünk lesz tehát egy szerkezetre amely tárolja a sejteket és a játéktér méreteit. Az egyszerűség kedvéért és azért hogy ne keljen minden sornak `malloc`-al külön külön memóriát foglalni, a tömb **1 dimenziós** lesz (emiatt a tömb mérete `width * height`).
 A mi esetünkben ez a `struct GameState`:
 ```c
@@ -25,11 +55,9 @@ typedef struct Vector {
 } Vector;
 ```
 
----
+### Függvények
 
-## Függvények
-
-### A fönti adatszerkezetek mellé szükségünk lesz segéd függvényekre:
+#### A fönti adatszerkezetek mellé szükségünk lesz segéd függvényekre:
 
 ```c
 int getCellIndex(Vector coords, int width);
@@ -38,7 +66,6 @@ int getCellIndex(Vector coords, int width);
 
 > [!important]
 >  Az egyszerűség kedvéért egyenlőre egy 1 dimenziós tömbben tárlojuk a sejteket, emiatt van szükség erre a függvényre, hogy átalakítsunk egy 2 dimenziós koordinátát egy indexre
-
 
 
 ```c
@@ -64,6 +91,8 @@ Kinullázza egy `GameState` cell tömbjét.
 void randomizeCells(GameState* game);
 ```
 Random `bool`-okkal feltölti a `GameState` cell tömbjét.
+
+
 > [!info]
 > A random függvény használata előtt meg kell hívni az `srand`-ot:
 > ```c
@@ -71,9 +100,7 @@ Random `bool`-okkal feltölti a `GameState` cell tömbjét.
 > ```
 > Ez teljes mértékben a függvényt felhasználóra van bízva
 
----
-
-### További a játékot irányító függvények:
+#### További a játékot irányító függvények:
 
 ```c
 int countAliveNeighbours(Vector* pos, GameState* game);
@@ -89,56 +116,126 @@ Egy adott `GameState`-nek visszaadja következő iterációját, a fenti szabál
 > [!Important]
 > A memóriaszivárgást elkerülendő fontos hogy amikor új `GameState` et hozunk létre, a régit a `destroyGameState` el töröljük
 
-## További instrukciók, megjegyzések:
 
-A függvények és az adatstruktúrák külön modul-t kaptak, ezek elérése egyszerűen a `conwayGame.h` header file include-olásával megoldható.
-Az adatszerkezetek a header fileban kaptak helyet a függvények implementációja kommentekkel együtt pedig a c source code fileban vannak.
-
-
-A `main` függvény mellett a `main.c` fileban található még egy render függvény is.
 ```c
-void renderState(GameState* game);
+void stepGame(GameState** game);
 ```
-Ez a függvény `printf`-el a konzolon megjeleníti az adott jázékállást
-
-#### Megjegyzés:
-Úgy gondolom ez a függvény nem a játék moduljába való mivel igazából a `GameState` -en kívül semmi köze nincs a játékhoz. Nem a játék menetével hanem annak megjelenítésével foglalkozik, ebből kifolyólag szerintem teljesen saját modulja kéne legyen. Mivel 1 db függvényről van szó ami közel sem a végleges függvény ezért egyenlőre nem hoztam létre külön modult neki.
-
-> [!todo]
-> A jövőben a megjelenítéssel foglalkozó logika egy game engine modulban lesz, amely ugyanúgy a konzolon fogja a játékot megjeleníteni. Ezen felül a game engine fog foglalkozni a felhasználóval való kommunikációval és az adatok bekérésével. Ezek szintúgy nem kapcsolódnak a játékhoz, hanem generikus logika amit más programban ugyanígy fel lehet használni
-
-#### További változtatások a jövőben:
-
->[!todo]
->A fájlból való beolvasás, a játékállás mentése és a menüvezérlés implementálása
-
->[!todo]
->Paraméter kezelés és vezérlés
->`gameoflife.exe <param>`
-
->[!todo]
->Általános hibakezelés implementálása és üzenetek a felhasználó felé
->Pl.: `malloc`-nál jelenleg nem vizsgálunk rá hogy sikerült e a memória foglalás
-
-> [!todo]
-> Általános optimalizálás ha van rá mód
-
->[!bug]
->A megjelenítésnél jelenleg minél nagyobb pályát választunk annál látványosabban villog a kép a karakterek kiírásának lassúságából adódóan
-
-> [!bug]
-> A pálya széléhez érve a sejtek furán viselkednek. A pálya széle úgy viselkedik mint egy keret halott sejtekből.
-
->[!question]
->A pálya széle hogy funkcionáljon? Jó hogy olyan mint egy keret halott sejtekből? Ha nem akkor hogyan máshogy?
-
-> [!abstract]- Ábrázolás
-> Esetleg van-e jobb módja a sejtek ábrázolásának. Jobb karakter?
-> Pl.: `#` és `.`
+Egy `GameState` pointert tovább léptet a játék következő állására, a régi állást pedig törli
 
 
-# Felhasználói dokumentáció
+```c
+void convertToChar(GameState* game, char* buff)
+```
+Betölti egy bufferba a játékállást
 
-Egyszerű a felhasználás:
-- Indítsuk el a programot valamilyen terminálban pl.: `cmd`
-- A programot az `ESC` gomb lenyomásával megállíthatjuk
+
+```c
+void loadStateFromFile(char* fileName, GameState* game);
+```
+Betölti a játékállást egy fájlból
+
+
+```c
+void saveStateToFile(char* fileName, GameState* game);
+```
+Elmenti a játékállást egy fájlba
+
+---
+
+
+## A játék megjelenítése
+### Adatszerkezetek
+A játék logikája mellett a megjelenítéssel is foglalkoznunk kell. A játék tesztelésénél felmerült az a probléma hogy az eredeti egyszerű `printf` függvény nem elég gyors ahhoz hogy a játékot nagyobb méreteknél normális meg lehessen jeleníteni. Ezért a játék közvetlenül a [win32 api](https://learn.microsoft.com/en-us/windows/console/console-functions)
+console részével kommunikál. Ez elsőre bonyolultnak tűnhet, azonban a microsoft remek dokumentációt kínál fel számunkra. Viszont ez a függvények felhasználását illetően irrelevánsak. A windows api-val való kommunikáció megkönnyítésére egy `struct` ot hoztuk létre.
+Ez a `struct Screen`:
+```c
+typedef struct Screen {  
+    char* chars;  
+    int size;  
+    char* title;  
+    HANDLE console;  
+    DWORD bytesOnScreen;  
+    CONSOLE_CURSOR_INFO conCurInf;  
+} Screen;
+```
+
+### Függvények
+```c
+Screen* createScreen(int size, char* title)
+```
+Dinamikus memória kezeléssel létrehoz egy `Screen` -t a megadott méret szerint majd visszaad egy pointert ami erre mutat.
+
+
+```c
+void destroyScreen(Screen* screen);
+```
+Dinamikusan kezeli a `Screen` memóriájának felszabadítását
+
+
+```c
+void print2d(char* buff, int length, bool withLineBreak, int lineWidth);
+```
+Kiírja a buff-ban található karaktereket a képernyőre. Lassú!
+
+
+```c
+void render2d(Screen* screen);
+```
+A `Screen` char tömbjét a windows api segítségével megjeleníti a konzolon. Hátránya hogy nem lehet sortöréseket használni, azonban nagyon gyors és hatékony. Előtte hívjuk meg az aktiváló függvényt.
+
+
+```c
+void hideCursor(Screen* screen);
+void showCursor(Screen* screen);
+```
+Eltünteti és megjeleníti a konzolban a kurzort
+
+
+```c
+void activateScreen(Screen* screen);
+void deactivateScreen(Screen* screen);
+```
+Aktiválja illetve deaktiválja a létrehozott `Screen`-t. Fontos hogy a render függvény előtt aktiváljuk a `Screen`-t.
+
+
+---
+
+
+## A játék beállítása
+### Adatszerkezetek
+Úgy ahogyan a megjelenítésnél is könnyített a függvények közötti kommunikációt egy adatszerkezet itt is hasznunkra lesz egy pár.
+A beállítások kezelésére ez a `struct Settings`:
+```c
+typedef struct Settings {  
+    char *title;  
+    int escapeKey;  
+    int fps;  
+    int maxFileNameLength;  
+    char randomStartChar;  
+    char noSaveChar;  
+} Settings;
+```
+Illetve a program paramétereinek kezelésére a `struct Params`:
+```c
+typedef struct Params {  
+    int width;  
+    int height;  
+    char *loadFileName;  
+    char *saveFileName;  
+    int iterationCount;  
+} Params;
+```
+Így egy struct-ba össze tudjuk gyűjteni az összes beállítást és egy helyen kell csak módosítanunk ezeket ha más beállításokat szeretnénk.
+
+### Függvények
+```c
+void questionUser(Params* params, Settings* settings);  
+```
+A kód olvashatósága érdekében jött létre, egy segéd függvény amely a konzolbemenet segítségével megkérdezi a felhasználót milyen paraméterekkel akarja futtatni a programot és betölti ezeket a `Params* param`-ba
+
+
+```c
+void parseArguments(int argc, char** argv, Params* params);
+```
+A program meghívásánál megadott argumentumokat betölti a `Params* parms` - ba.
+
